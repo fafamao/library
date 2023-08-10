@@ -2,7 +2,7 @@
 
 namespace http
 {
-    tcp_server::tcp_server(std::string ip_address, int port) : _ip(ip_address), _port(port)
+    tcp_server::tcp_server(std::string ip_address, int port) : _ip(ip_address), _port(port), serverMsg(buildResponse())
     {
         start_server();
     };
@@ -62,6 +62,27 @@ namespace http
            << " PORT: " << ntohs(socketAddress.sin_port)
            << " ***\n\n";
         log(ss.str());
+
+        int bytesReceived;
+        while (true)
+        {
+            log("====== Waiting for a new connection ======\n\n\n");
+            acceptConnection();
+
+            bytesReceived = read(_new_socket, buffer, BUFFER_SIZE);
+            if (bytesReceived < 0)
+            {
+                exitWithError("Failed to read bytes from client socket connection");
+            }
+
+            std::ostringstream ss;
+            ss << "------ Received Request from client ------\n\n";
+            log(ss.str());
+
+            sendResponse();
+
+            close(_new_socket);
+        }
     }
 
     void tcp_server::acceptConnection()
@@ -75,6 +96,26 @@ namespace http
                << inet_ntoa(socketAddress.in_addr) << "; PORT: "
                << ntohs(socketAddress.sin_port);
             exitWithError(ss.str());
+        }
+    }
+
+    void tcp_server::sendResponse()
+    {
+    }
+
+    std::string tcp_server::buildResponse()
+    {
+        long bytesSent;
+
+        bytesSent = write(_new_socket, serverMsg.c_str(), serverMsg.size());
+
+        if (bytesSent == serverMsg.size())
+        {
+            log("------ Server Response sent to client ------\n\n");
+        }
+        else
+        {
+            log("Error sending response to client");
         }
     }
 }

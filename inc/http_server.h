@@ -11,11 +11,6 @@ namespace http
     constexpr int MAX_CONNECTION_THREAD = 10;
     constexpr int BUFFER_SIZE = 30720;
 
-    // typedef struct
-    // {
-    //     unsigned long sin_addr;
-    // } in_addr;
-
     typedef struct
     {
         short sin_family;
@@ -33,6 +28,8 @@ namespace http
         void close_server();
         void start_listen();
         void acceptConnection();
+        void sendResponse();
+        std::string buildResponse();
         void log(const std::string &message)
         {
             std::cout << message << std::endl;
@@ -47,7 +44,9 @@ namespace http
         int _socket;
         int _new_socket;
         std::string _ip;
+        std::string serverMsg;
         int _port;
+        char buffer[BUFFER_SIZE] = {0};
         unsigned int socketAddressLength;
         sock_addr socketAddress;
     };
